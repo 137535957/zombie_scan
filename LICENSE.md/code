@@ -1,0 +1,57 @@
+#!/bin/python
+import logging
+logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
+import sys
+from scapy.all import *
+
+def IPID(zombie):
+    try1 = sr1(IP(dst=zombie)/TCP(flags='SA'),timeout=2,verbose=0)
+    send(IP(dst=zombie)/TCP(flags='SA'),verbose=0)
+    try2 = sr1(IP(dst=zombie)/TCP(flags='SA'),timeout=2,verbose=0)
+    try:
+        if try2[IP].id == (try1[IP].id+2):
+            print 'this zombie is a good zombie'
+            ans = raw_input('Do you want to use this zombie?(Y/N):')
+            if ans == 'Y':
+                target = raw_input('Please input target ipaddress:')
+                start_port = raw_input('Please input start port:')
+                end_port = raw_input('Please input end port:')
+                zombie_scan(zombie,target,start_port,end_port)
+            else:
+                sys.exit()
+        else:
+            print 'this zombie is a bad zombie'
+    except:
+        pass
+
+
+
+def zombie_scan(zombie,target,start_port,end_port):
+    print 'scan target:'+target+'\t'+'use zombie:'+zombie
+    print '\n*********************port list************************\n'
+    start = int (start_port)
+    end = int(end_port)
+    for port in range(start,end):
+        sz = sr1(IP(dst=zombie)/TCP(flags='SA'),timeout=2,verbose=0)
+        st = sr1(IP(src=zombie,dst=target)/TCP(dport=port,flags='S'),timeout=2,verbose=0)
+        sz1 = sr1(IP(dst=zombie)/TCP(flags='SA'),timeout=2,verbose=0)
+        try:
+            if sz1[IP].id == (sz[IP].id+2):
+                print port
+            else:pass
+        except:pass
+
+print '---1--- input zombie ipaddress'
+print '---2--- target scan'
+ans = raw_input('Please select your a option(1/2):')
+if ans == '1':
+    zombie = raw_input('Please inout your zombie ipaddress:')
+    IPID(zombie)
+else:
+    zombie = raw_input('Please input your zombie ipaddress:')
+    target = raw_input('Please input your target ipaddress:')
+    start_port = raw_input('Please input start port:')
+    end_port = raw_input('Pliease input end port:')
+    zombie_scan(zombie,target,start_port,end_port)
+
+        
